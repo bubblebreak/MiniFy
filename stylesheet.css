@@ -1,0 +1,116 @@
+:root {
+  --color-orange: #F99266;
+  --color-pink: #FB86AC;
+  --color-green: #B0D65C;
+  --color-yellow: #F6E57D;
+  --color-blue: #82EDB8;
+  background: #F99266;
+  background: linear-gradient(307deg,rgba(249, 146, 102, 1) 0%, rgba(246, 229, 125, 1) 36%, rgba(176, 214, 92, 1) 67%, rgba(130, 237, 184, 1) 100%);
+  
+}
+
+body{
+  height: 100vh;
+  margin: 0;
+  font-family:Verdana, Geneva, Tahoma, sans-serif
+}
+
+h1{
+  font-family: "DynaPuff", system-ui;
+  font-optical-sizing: auto;
+  font-size: 5rem;
+  text-align: center;
+  color: var(--color-orange);
+}
+
+h2 {
+  font-family: "DynaPuff", system-ui;
+  font-optical-sizing: auto;
+  font-size: 2rem;
+  text-align: center;
+  color: var(--color-blue);
+}
+
+#contentbox{
+  width: 50%;
+  background-color: white;
+  padding: 20px;
+  border-radius: 10px;
+  height: 80vh;
+}
+
+.center-vertical{
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.center-horizontal{
+  display: flex;
+  justify-content: center;
+}
+
+.full-width{
+  width: 100%;
+}
+
+.full-height{
+  height: 100%;
+}
+
+.roleBtn {
+    background-color: var(--color-blue);
+    border: 5px solid var(--color-orange);
+    padding: 20px;
+    font-size: 1.5rem;
+    border-radius: 10px;
+    margin: 20px;
+    cursor: pointer;
+}
+
+.classIDfield {
+  padding: 20px;
+  font-size: 1.2rem;
+}
+
+.songInputfield {
+  padding: 10px;
+  font-size: 1rem;
+  margin: 2px;
+}
+
+.classIDfieldBorder {
+  border: 1px solid var(--color-orange);
+  border-radius: 5px;
+}
+
+#getClassIDView {
+    text-align: center;
+}
+
+.hidden{
+  display: none;
+}
+
+.active {
+  background-color: var(--color-green);
+  border: 1px solid var(--color-blue);
+  border-radius: 5px;
+}
+
+.deleteBtn{
+  background-color: var(--color-pink);
+  border: 1px solid var(--color-orange);
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.dataBtn {
+    border: 5px solid var(--color-orange);
+    padding: 10px;
+    font-size: 1.2rem;
+    border-radius: 10px;
+    margin: 10px;
+    cursor: pointer;
+}
