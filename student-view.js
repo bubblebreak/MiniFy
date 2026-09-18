@@ -1,6 +1,7 @@
 import { setupBPMCollection } from "/bpm-collection.js";
 import { setupDanceCollection } from "/dance-collection.js";
 import { setupMoodCollection } from "/mood-collection.js";
+import { setupLikeCollection } from "/like-collection.js";
 
 let entryContainer = document.getElementById("entryContainer");
 
@@ -81,6 +82,9 @@ export function setupStudentView(){
     let popularityBtn = document.createElement("button")
     popularityBtn.classList.add("dataBtn")
     popularityBtn.innerText = "Saml popularitets score"
+    popularityBtn.addEventListener("click", () => {
+        setupLikeCollection()
+    })
 
     let closeBtn = document.createElement("button")
     closeBtn.innerText = "Gå tilbage"

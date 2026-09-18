@@ -8,6 +8,9 @@ var video;
 var canvas;
 var outputDisplay;
 var ctx;
+var likeVideoTopOverlay;
+var likeVideoBottomOverlay;
+var likeResultDisplay;
 const recordAreaDiameter = 400*factor; // Diameter in px
 const boxHeight = 70*factor;
 const recordAreaDistanceFromTop = 25; // Distance from top in percentage
@@ -50,7 +53,7 @@ export function setupLikeCollection() {
         likeVideo.id = "likeVideo";
         likeVideo.setAttribute("autoplay", true);
 
-        let likeVideo$TopOverlay = document.createElement("div");
+        let likeVideoTopOverlay = document.createElement("div");
         likeVideoTopOverlay.id = "likeVideoTopOverlay";
 
         let likeVideoBottomOverlay = document.createElement("div");
@@ -59,6 +62,7 @@ export function setupLikeCollection() {
         likeVideoContainer.appendChild(likeVideo);
         likeVideoContainer.appendChild(likeVideoTopOverlay);
         likeVideoContainer.appendChild(likeVideoBottomOverlay);
+        
 
     let likeVideoCanvas = document.createElement("canvas");
     likeVideoCanvas.id = "likeVideoCanvas";
@@ -96,6 +100,9 @@ function setLikeVariables() {
     canvas = document.getElementById('likeVideoCanvas');
     outputDisplay = document.getElementById('likeOutputValue');
     ctx = canvas.getContext('2d');
+    likeVideoTopOverlay = document.getElementById('likeVideoTopOverlay');
+    likeVideoBottomOverlay = document.getElementById('likeVideoBottomOverlay');
+    likeResultDisplay = document.getElementById('likeResultDisplay');
 
     // Set up the video stream
     navigator.mediaDevices.getUserMedia({ video: true }).then(stream => {
@@ -127,22 +134,22 @@ function setLikeVariables() {
             let activateDown = false
 
             if(topVariance>500){
-                document.getElementById("likeVideoTopOverlay").style.borderColor = "green";
-                document.getElementById("likeVideoTopOverlay").style.backgroundColor = "green";
+                likeVideoTopOverlay.style.borderColor = "green";
+                likeVideoTopOverlay.style.backgroundColor = "green";
                 activateUp = true;
             } else{
-                document.getElementById("likeVideoTopOverlay").style.borderColor = "grey";
-                document.getElementById("likeVideoTopOverlay").style.backgroundColor = "grey";
+                likeVideoTopOverlay.style.borderColor = "grey";
+                likeVideoTopOverlay.style.backgroundColor = "grey";
 
             }
 
             if(bottomVariance>500){
-                document.getElementById("likeVideoBottomOverlay").style.borderColor = "green";
-                document.getElementById("likeVideoBottomOverlay").style.backgroundColor = "green";
+                likeVideoBottomOverlay.style.borderColor = "green";
+                likeVideoBottomOverlay.style.backgroundColor = "green";
                 activateDown = true
             } else{
-                document.getElementById("likeVideoBottomOverlay").style.borderColor = "grey";
-                document.getElementById("likeVideoBottomOverlay").style.backgroundColor = "grey";
+                likeVideoBottomOverlay.style.borderColor = "grey";
+                likeVideoBottomOverlay.style.backgroundColor = "grey";
             }
 
             if(activateUp){
@@ -159,7 +166,7 @@ function setLikeVariables() {
             }
 
             outputDisplay.innerText = output
-            document.getElementById('likeResultDisplay').style.top = videoHeight/100*(100-output) + 'px';
+            likeResultDisplay.style.top = videoHeight/100*(100-output) + 'px';
 
         }
 
