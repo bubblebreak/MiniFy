@@ -2,12 +2,44 @@ import { setupStudentView } from "/student-view.js";
 
 let entryContainer = document.getElementById("entryContainer");
 
+const factor = 1.2;
+
+var video;
+var canvas;
+var outputDisplay;
+var ctx;
+const recordAreaDiameter = 400*factor; // Diameter in px
+const boxHeight = 70*factor;
+const recordAreaDistanceFromTop = 25; // Distance from top in percentage
+
+const videoHeight = 360*factor;
+const videoWidth = 480*factor;
+
+let highVarianceCount = 0;
+let isAboveThreshold = false;
+let objectInside = false;
+let maxVariance = 0;
+let minVariance = Infinity;
+const startTime = Date.now();
+let output = 50;
+
+let previousFrame = null;
+
+// Set styling of recording area
+document.documentElement.style.setProperty('--diameter', recordAreaDiameter + 'px');
+document.documentElement.style.setProperty('--halfDiameter', -Math.ceil(recordAreaDiameter/2) + 'px');
+document.documentElement.style.setProperty('--boxHeight', boxHeight + 'px');
+document.documentElement.style.setProperty('--leftDistance', Math.ceil((videoWidth-recordAreaDiameter)/2) + 'px');
+document.documentElement.style.setProperty('--videoHeight', videoHeight + 'px');
+document.documentElement.style.setProperty('--videoWidth', videoWidth + 'px');
+
 export function setupLikeCollection() {
     let likeResultContainer = document.createElement("div");
     likeResultContainer.id = "likeResultContainer";
 
         let likeResultDisplay = document.createElement("div");
         likeResultDisplay.id = "likeResultDisplay";
+        likeResultDisplay.style.top = (videoHeight/2)-5 + 'px';
 
         likeResultContainer.appendChild(likeResultDisplay);
 
@@ -55,49 +87,86 @@ export function setupLikeCollection() {
     entryContainer.appendChild(likeVideoCanvas);
     entryContainer.appendChild(likeOutput);
     entryContainer.appendChild(likeCollectButton);
+
+    setLikeVariables();
 }
 
-const factor = 1.2;
+function setLikeVariables() {
+    video = document.getElementById('likeVideo');
+    canvas = document.getElementById('likeVideoCanvas');
+    outputDisplay = document.getElementById('likeOutputValue');
+    ctx = canvas.getContext('2d');
 
-const video = document.getElementById('likeVideo');
-const canvas = document.getElementById('likeVideoCanvas');
-const outputDisplay = document.getElementById('likeOutputValue');
-const ctx = canvas.getContext('2d');
-const recordAreaDiameter = 400*factor; // Diameter in px
-const boxHeight = 70*factor;
-const recordAreaDistanceFromTop = 25; // Distance from top in percentage
-
-const videoHeight = 360*factor;
-const videoWidth = 480*factor;
-
-let highVarianceCount = 0;
-let isAboveThreshold = false;
-let objectInside = false;
-let maxVariance = 0;
-let minVariance = Infinity;
-const startTime = Date.now();
-let output = 50;
-
-let previousFrame = null;
-
-// Set styling of recording area
-document.documentElement.style.setProperty('--diameter', recordAreaDiameter + 'px');
-document.documentElement.style.setProperty('--halfDiameter', -Math.ceil(recordAreaDiameter/2) + 'px');
-document.documentElement.style.setProperty('--boxHeight', boxHeight + 'px');
-document.documentElement.style.setProperty('--leftDistance', Math.ceil((videoWidth-recordAreaDiameter)/2) + 'px');
-document.documentElement.style.setProperty('--videoHeight', videoHeight + 'px');
-document.documentElement.style.setProperty('--videoWidth', videoWidth + 'px');
-
-document.getElementById('likeResultDisplay').style.top = (videoHeight/2)-5 + 'px';
-
-
-
-// Set up the video stream
-navigator.mediaDevices.getUserMedia({ video: true }).then(stream => {
+    // Set up the video stream
+    navigator.mediaDevices.getUserMedia({ video: true }).then(stream => {
         video.srcObject = stream;
     }).catch(err => {
         console.error("Webcam access error:", err);
     });
+
+
+    setInterval(() => {
+    if (video.readyState === video.HAVE_ENOUGH_DATA) {
+        const frame = captureFrame();
+        const centerX = canvas.width / 2;
+        //const centerY = canvas.height / (100/recordAreaDistanceFromTop);
+        //const radius = recordAreaDiameter/2;
+
+        const currentTopPixels = getTopPixels(frame, centerX);
+
+        const currentBottomPixels = getBottomPixels(frame, centerX);
+
+        if (previousFrame) {
+            const previousTopPixels = getTopPixels(previousFrame, centerX);
+            const previousBottomPixels = getBottomPixels(previousFrame, centerX);
+
+            const topVariance = calculateVariance(currentTopPixels, previousTopPixels);
+            const bottomVariance = calculateVariance(currentBottomPixels, previousBottomPixels);
+
+            let activateUp = false
+            let activateDown = false
+
+            if(topVariance>500){
+                document.getElementById("likeVideoTopOverlay").style.borderColor = "green";
+                document.getElementById("likeVideoTopOverlay").style.backgroundColor = "green";
+                activateUp = true;
+            } else{
+                document.getElementById("likeVideoTopOverlay").style.borderColor = "grey";
+                document.getElementById("likeVideoTopOverlay").style.backgroundColor = "grey";
+
+            }
+
+            if(bottomVariance>500){
+                document.getElementById("likeVideoBottomOverlay").style.borderColor = "green";
+                document.getElementById("likeVideoBottomOverlay").style.backgroundColor = "green";
+                activateDown = true
+            } else{
+                document.getElementById("likeVideoBottomOverlay").style.borderColor = "grey";
+                document.getElementById("likeVideoBottomOverlay").style.backgroundColor = "grey";
+            }
+
+            if(activateUp){
+                output +=1
+                if(output>100){
+                    output = 100;
+                }
+            }
+            if(activateDown){
+                output -=1
+                if(output<0){
+                    output = 0;
+                }
+            }
+
+            outputDisplay.innerText = output
+            document.getElementById('likeResultDisplay').style.top = videoHeight/100*(100-output) + 'px';
+
+        }
+
+        previousFrame = frame;
+    }
+    }, 100);
+}
 
 function getTopPixels(imageData, centerX){
     const pixels = [];
@@ -183,65 +252,3 @@ function updateExtremes(variance) {
     document.getElementById('min').textContent = minVariance.toFixed(2);
     }
 }
-
-setInterval(() => {
-    if (video.readyState === video.HAVE_ENOUGH_DATA) {
-        const frame = captureFrame();
-        const centerX = canvas.width / 2;
-        //const centerY = canvas.height / (100/recordAreaDistanceFromTop);
-        //const radius = recordAreaDiameter/2;
-
-        const currentTopPixels = getTopPixels(frame, centerX);
-
-        const currentBottomPixels = getBottomPixels(frame, centerX);
-
-        if (previousFrame) {
-            const previousTopPixels = getTopPixels(previousFrame, centerX);
-            const previousBottomPixels = getBottomPixels(previousFrame, centerX);
-
-            const topVariance = calculateVariance(currentTopPixels, previousTopPixels);
-            const bottomVariance = calculateVariance(currentBottomPixels, previousBottomPixels);
-
-            let activateUp = false
-            let activateDown = false
-
-            if(topVariance>500){
-                document.getElementById("likeVideoTopOverlay").style.borderColor = "green";
-                document.getElementById("likeVideoTopOverlay").style.backgroundColor = "green";
-                activateUp = true;
-            } else{
-                document.getElementById("likeVideoTopOverlay").style.borderColor = "grey";
-                document.getElementById("likeVideoTopOverlay").style.backgroundColor = "grey";
-
-            }
-
-            if(bottomVariance>500){
-                document.getElementById("likeVideoBottomOverlay").style.borderColor = "green";
-                document.getElementById("likeVideoBottomOverlay").style.backgroundColor = "green";
-                activateDown = true
-            } else{
-                document.getElementById("likeVideoBottomOverlay").style.borderColor = "grey";
-                document.getElementById("likeVideoBottomOverlay").style.backgroundColor = "grey";
-            }
-
-            if(activateUp){
-                output +=1
-                if(output>100){
-                    output = 100;
-                }
-            }
-            if(activateDown){
-                output -=1
-                if(output<0){
-                    output = 0;
-                }
-            }
-
-            outputDisplay.innerText = output
-            document.getElementById('likeResultDisplay').style.top = videoHeight/100*(100-output) + 'px';
-
-        }
-
-        previousFrame = frame;
-    }
-}, 100);
